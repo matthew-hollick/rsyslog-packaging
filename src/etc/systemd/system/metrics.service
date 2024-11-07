@@ -1,0 +1,10 @@
+[Unit]
+Description=System Metrics Collection Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/metrics.py | socat UNIX-SENDTO:/run/systemd/journal/syslog -
+
+[Install]
+WantedBy=multi-user.target

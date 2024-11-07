@@ -1,1 +1,4 @@
 systemctl restart rsyslog.service
+systemctl daemon-reload
+systemctl enable metrics.timer
+systemctl start metrics.timer

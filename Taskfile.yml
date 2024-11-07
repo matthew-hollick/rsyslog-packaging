@@ -3,8 +3,8 @@
 version: '3'
 
 env:
-  VERSION: 0.0.1
-  SUBVERSION: 1
+  MAJORVERSION: 0.0.1
+  MINORVERSION: 1
 
 tasks:
   clean:
@@ -13,33 +13,41 @@ tasks:
   prepare:
     cmds:
       - sudo apt update -y
-      - sudo apt install -y
-          ruby-rubygems
-          build-essential
-          debhelper
+      - sudo apt install -y 
+          ruby-rubygems 
+          build-essential 
+          debhelper 
           dh-make
+          python3
       - sudo gem install fpm
   package:
     cmds:
-      - fpm
+      - fpm 
           -s dir
-          -t deb
-          -p rsyslog-local-config-${VERSION}-${SUBVERSION}-any.deb
+          -t deb 
+          --log error
+          -p rsyslog-local-config-${MAJORVERSION}-${MINORVERSION}-any.deb
           --name rsyslog-local-config
-          --version ${VERSION}
+          --version ${MAJORVERSION}
           --architecture all
           --depends rsyslog-kafka
+          --depends python3
+          --depends python3-psutil
+          --depends socat 
           --after-install postinst
           --config-files /etc/rsyslog.d/
-          --description "Deploy local configuration for rsyslog"
-          etc/rsyslog.d/=/etc/rsyslog.d/
+          --config-files /etc/systemd/system/
+          --description "Deploy local monitoring configuration for rsyslog"
+          src/etc/rsyslog.d/=/etc/rsyslog.d/
+          src/etc/systemd/system/=/etc/systemd/system/
+          src/usr/local/bin/metrics.py=/usr/local/bin/metrics.py
   contents:
     cmds:
       - dpkg -c *deb
   uninstall:
     cmds:
-      - sudo dpkg -P local-config-rsyslog
-      - sudo systemctl restart rsyslogd
+      - sudo dpkg -P rsyslog-local-config
+      - sudo systemctl restart rsyslog
   install:
     cmds:
-      - sudo dpkg -i rsyslog-local-config-${VERSION}-${SUBVERSION}-any.deb
+      - sudo dpkg -i rsyslog-local-config-${MAJORVERSION}-${MINORVERSION}-any.deb
