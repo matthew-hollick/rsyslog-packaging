@@ -1,0 +1,45 @@
+# https://taskfile.dev
+
+version: '3'
+
+env:
+  VERSION: 0.0.1
+  SUBVERSION: 1
+
+tasks:
+  clean:
+    cmds:
+      - rm *deb
+  prepare:
+    cmds:
+      - sudo apt update -y
+      - sudo apt install -y
+          ruby-rubygems
+          build-essential
+          debhelper
+          dh-make
+      - sudo gem install fpm
+  package:
+    cmds:
+      - fpm
+          -s dir
+          -t deb
+          -p rsyslog-local-config-${VERSION}-${SUBVERSION}-any.deb
+          --name rsyslog-local-config
+          --version ${VERSION}
+          --architecture all
+          --depends rsyslog-kafka
+          --after-install postinst
+          --config-files /etc/rsyslog.d/
+          --description "Deploy local configuration for rsyslog"
+          etc/rsyslog.d/=/etc/rsyslog.d/
+  contents:
+    cmds:
+      - dpkg -c *deb
+  uninstall:
+    cmds:
+      - sudo dpkg -P local-config-rsyslog
+      - sudo systemctl restart rsyslogd
+  install:
+    cmds:
+      - sudo dpkg -i rsyslog-local-config-${VERSION}-${SUBVERSION}-any.deb
